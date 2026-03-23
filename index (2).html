@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeecea;
+  --text:#1a1a18;--text2:#6b6b66;--text3:#9b9b96;
+  --border:rgba(0,0,0,0.11);--border2:rgba(0,0,0,0.18);
+  --r:10px;--rl:14px;
+  --purple:#534AB7;--purple-bg:#EEEDFE;--purple-t:#3C3489;
+  --teal:#1D9E75;--teal-bg:#E1F5EE;--teal-t:#085041;
+  --coral:#D85A30;--coral-bg:#FAECE7;--coral-t:#712B13;
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-t:#0C447C;
+  --pink:#993556;--pink-bg:#FBEAF0;--pink-t:#72243E;
+  --amber:#BA7517;--amber-bg:#FAEEDA;--amber-t:#633806;
+  --green:#3B6D11;--green-bg:#EAF3DE;--green-t:#27500A;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#252523;--bg3:#2a2a27;
+    --text:#e8e6df;--text2:#9b9b96;--text3:#6b6b66;
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+    --purple-bg:#3C3489;--purple-t:#CECBF6;
+    --teal-bg:#085041;--teal-t:#9FE1CB;
+    --coral-bg:#712B13;--coral-t:#F5C4B3;
+    --blue-bg:#0C447C;--blue-t:#B5D4F4;
+    --pink-bg:#72243E;--pink-t:#F4C0D1;
+    --amber-bg:#633806;--amber-t:#FAC775;
+    --green-bg:#27500A;--green-t:#C0DD97;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;}
+.shell{max-width:920px;margin:0 auto;padding:24px 16px 56px;}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.topbar h1{font-size:21px;font-weight:600;color:var(--text);}
+.topbar .sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.live-pill{display:flex;align-items:center;gap:6px;background:var(--bg);border:0.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text2);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.status{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:9px 14px;margin-bottom:14px;font-size:12px;color:var(--text3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.status span{color:var(--text2);}
+.rbtn{background:none;border:0.5px solid var(--border2);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;transition:background .15s;}
+.rbtn:hover{background:var(--bg2);}
+.errbanner{display:none;background:#FCEBEB;color:#791F1F;border:0.5px solid #F09595;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;line-height:1.6;}
+.errbanner code{background:rgba(0,0,0,.06);border-radius:3px;padding:1px 4px;font-size:11px;}
+.infobanner{display:none;background:var(--amber-bg);color:var(--amber-t);border:0.5px solid #EF9F27;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;line-height:1.6;}
+.tabs{display:flex;gap:3px;background:var(--bg2);border-radius:var(--r);padding:3px;margin-bottom:18px;}
+.tab{flex:1;padding:8px 8px;font-size:13px;border:none;border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;}
+.tab.on{background:var(--bg);color:var(--text);font-weight:500;border:0.5px solid var(--border);}
+.view{display:none;}.view.on{display:block;}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.mc{background:var(--bg2);border-radius:var(--r);padding:14px 16px;}
+.ml{font-size:11px;color:var(--text3);margin-bottom:5px;letter-spacing:.02em;}
+.mv{font-size:26px;font-weight:600;color:var(--text);line-height:1;}
+.ms{font-size:11px;color:var(--text3);margin-top:3px;}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px;}
+.ct{font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.lrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+.lrow:last-child{border-bottom:none;padding-bottom:0;}
+.lrank{font-size:12px;color:var(--text3);width:18px;text-align:right;flex-shrink:0;}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;}
+.linfo{flex:1;min-width:0;}
+.lname{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lbg{background:var(--bg2);border-radius:3px;height:5px;margin-top:4px;}
+.lfill{height:5px;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.lr{text-align:right;flex-shrink:0;}
+.lrev{font-size:13px;font-weight:600;color:var(--text);}
+.lsub{font-size:10px;color:var(--text3);}
+.wc{display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:6px;}
+.wcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;}
+.winn{display:flex;align-items:flex-end;width:100%;flex:1;}
+.wbar{width:100%;border-radius:3px 3px 0 0;transition:height .7s cubic-bezier(.4,0,.2,1);}
+.wday{font-size:10px;}
+.wval{font-size:9px;color:var(--text2);min-height:11px;}
+.wfoot{display:flex;justify-content:space-between;margin-top:6px;}
+.wfoot span{font-size:11px;color:var(--text3);}
+.wfoot strong{font-size:11px;font-weight:600;color:var(--text);}
+.rc{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:14px 16px;margin-bottom:10px;}
+.rh{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.rn{font-size:14px;font-weight:600;color:var(--text);}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;margin-top:2px;}
+.bg{background:var(--amber-bg);color:var(--amber-t);}
+.bk{background:var(--bg2);color:var(--text2);}
+.rs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.rsb{background:var(--bg2);border-radius:var(--r);padding:8px 10px;}
+.rsl{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.rsv{font-size:18px;font-weight:600;color:var(--text);}
+.rnote{font-size:12px;color:var(--text2);font-style:italic;margin-top:8px;line-height:1.4;border-left:2px solid var(--border2);padding-left:8px;}
+.ai{display:flex;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);}
+.ai:last-child{border-bottom:none;}
+.adot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.atxt{font-size:13px;color:var(--text);line-height:1.4;}
+.atm{font-size:11px;color:var(--text3);margin-top:1px;}
+.gcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px;}
+.gstep{display:flex;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.gstep:last-child{border-bottom:none;}
+.gnum{width:24px;height:24px;border-radius:50%;background:var(--purple-bg);color:var(--purple-t);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.gtitle{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.gdesc{font-size:12px;color:var(--text2);line-height:1.6;}
+.gdesc code{background:var(--bg2);border-radius:4px;padding:1px 5px;font-size:11px;font-family:monospace;color:var(--text);}
+.gdesc a{color:var(--blue);}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:5px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:36px 20px;color:var(--text3);font-size:13px;}
+@media(max-width:580px){
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .two{grid-template-columns:1fr;}
+  .rs{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div>
+      <h1>Sales Dashboard</h1>
+      <div class="sub" id="curdate"></div>
+    </div>
+    <div class="live-pill"><div class="dot"></div><span id="livelbl">Live</span></div>
+  </div>
+
+  <div class="status">
+    <span id="statusmsg"><span class="spin"></span>Connecting to Google Sheets…</span>
+    <button class="rbtn" onclick="loadData()">Refresh now</button>
+  </div>
+
+  <div class="errbanner" id="errbanner"></div>
+  <div class="infobanner" id="infobanner"></div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="go('overview')">Overview</button>
+    <button class="tab" onclick="go('team')">Team</button>
+    <button class="tab" onclick="go('activity')">Activity</button>
+    <button class="tab" onclick="go('setup')">Setup guide</button>
+  </div>
+
+  <div id="v-overview" class="view on">
+    <div class="metrics">
+      <div class="mc"><div class="ml">Revenue today</div><div class="mv" id="m-rev">—</div><div class="ms">all reps</div></div>
+      <div class="mc"><div class="ml">Deals closed</div><div class="mv" id="m-deals">—</div><div class="ms">today</div></div>
+      <div class="mc"><div class="ml">Calls made</div><div class="mv" id="m-calls">—</div><div class="ms">today</div></div>
+      <div class="mc"><div class="ml">Leads contacted</div><div class="mv" id="m-leads">—</div><div class="ms">today</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Leaderboard — today</div>
+        <div id="lbList"><div class="empty">Waiting for data…</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">Weekly revenue</div>
+        <div class="wc" id="wchart"></div>
+        <div class="wfoot"><span>Mon — Sun</span><strong id="wktotal">—</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="v-team" class="view">
+    <div id="teamList"><div class="empty">Waiting for data…</div></div>
+  </div>
+
+  <div id="v-activity" class="view">
+    <div class="card">
+      <div class="ct">Activity feed — all submissions</div>
+      <div id="feedList"><div class="empty">No submissions yet.</div></div>
+    </div>
+  </div>
+
+  <div id="v-setup" class="view">
+    <div class="gcard">
+      <div class="ct" style="margin-bottom:16px;">Setup guide</div>
+      <div class="gstep">
+        <div class="gnum">1</div>
+        <div>
+          <div class="gtitle">Your Google Sheet CSV URL is already saved</div>
+          <div class="gdesc">The dashboard is pulling from your published Sheet every 60 seconds. If you ever change sheets, open this HTML file and update <code>SHEET_CSV_URL</code> at the top of the script tag.</div>
+        </div>
+      </div>
+      <div class="gstep">
+        <div class="gnum">2</div>
+        <div>
+          <div class="gtitle">Connect Tally to your Google Sheet</div>
+          <div class="gdesc">In your Tally form → Integrations → Google Sheets → Connect. Every EOD submission auto-appends a row. Make sure your form has fields for: Name, Calls made, Leads contacted, Deals closed, Revenue, Tasks completed, Notes.</div>
+        </div>
+      </div>
+      <div class="gstep">
+        <div class="gnum">3</div>
+        <div>
+          <div class="gtitle">Column name matching</div>
+          <div class="gdesc">The dashboard uses fuzzy matching to detect columns automatically. If something isn't showing up, check the yellow banner that appears on load — it shows exactly which headers were detected and what was matched. You can also edit <code>COL_ALIASES</code> in the script to fix any mismatches.</div>
+        </div>
+      </div>
+      <div class="gstep">
+        <div class="gnum">4</div>
+        <div>
+          <div class="gtitle">Share this dashboard</div>
+          <div class="gdesc">Go to <a href="https://app.netlify.com/drop" target="_blank">app.netlify.com/drop</a> → drag this HTML file in → get a free live URL in seconds (e.g. <code>myteam.netlify.app</code>). Share that link — anyone with it can view the live dashboard. It auto-refreshes every 60 seconds.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSOggCxHSFTzUiHr2vVe5QwsgVJoyeMhJ71xS9J-jlifYgXdylU7_aKFVgO_i5yoNfsAt_bk2dVdjLG/pub?gid=0&single=true&output=csv';
+const REFRESH_MS = 60000;
+
+// Edit these if your Tally column names are different
+const COL_ALIASES = {
+  timestamp: ['timestamp','submitted at','submitedat','submission time','date','time','created at'],
+  name:      ['name','rep name','your name','sales rep','rep','agent','employee','full name'],
+  calls:     ['calls made','calls','number of calls','# calls','total calls','call count'],
+  leads:     ['leads contacted','leads','leads reached','# leads','total leads','lead count'],
+  deals:     ['deals closed','deals','closed deals','# deals','total deals','deals won','deal count'],
+  revenue:   ['revenue','revenue ($)','total revenue','sales','amount','value','deal value','$ revenue','rev'],
+  tasks:     ['tasks completed','tasks','# tasks','total tasks','tasks done','task count'],
+  notes:     ['notes','note','highlights','comments','update','daily notes','eod notes','highlight'],
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AV=[
+  {bg:'var(--purple-bg)',c:'var(--purple-t)'},{bg:'var(--teal-bg)',c:'var(--teal-t)'},
+  {bg:'var(--coral-bg)',c:'var(--coral-t)'},{bg:'var(--blue-bg)',c:'var(--blue-t)'},
+  {bg:'var(--pink-bg)',c:'var(--pink-t)'},{bg:'var(--amber-bg)',c:'var(--amber-t)'},
+  {bg:'var(--green-bg)',c:'var(--green-t)'},
+];
+const BARS=['#534AB7','#1D9E75','#D85A30','#185FA5','#993556','#BA7517','#3B6D11'];
+let allRows=[],colMap={},repColors={},rcIdx=0,detectedHeaders=[];
+
+function money(n){return '$'+Math.round(n).toLocaleString();}
+function ini(name){return(name||'?').trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function rc(name){
+  if(!repColors[name]){repColors[name]={av:AV[rcIdx%AV.length],bar:BARS[rcIdx%BARS.length]};rcIdx++;}
+  return repColors[name];
+}
+
+function detectCols(headers){
+  detectedHeaders=headers;
+  const map={};
+  const norm=s=>s.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
+  headers.forEach(h=>{
+    const hn=norm(h);
+    for(const[key,aliases]of Object.entries(COL_ALIASES)){
+      if(!map[key]&&aliases.some(a=>{const an=norm(a);return hn===an||hn.includes(an)||an.includes(hn);}))
+        map[key]=h;
+    }
+  });
+  return map;
+}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<1)return[];
+  function parseLine(line){
+    const vals=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){
+      if(line[i]==='"'){inQ=!inQ;}
+      else if(line[i]===','&&!inQ){vals.push(cur.trim());cur='';}
+      else{cur+=line[i];}
+    }
+    vals.push(cur.trim());
+    return vals;
+  }
+  const headers=parseLine(lines[0]).map(h=>h.replace(/^"|"$/g,'').trim());
+  colMap=detectCols(headers);
+  return lines.slice(1).map(line=>{
+    const vals=parseLine(line);
+    const row={};
+    headers.forEach((h,i)=>{row[h]=(vals[i]||'').replace(/^"|"$/g,'').trim();});
+    return row;
+  }).filter(r=>colMap.name&&(r[colMap.name]||'').trim().length>0);
+}
+
+function isToday(ts){
+  if(!ts)return false;
+  const d=new Date(ts),n=new Date();
+  return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();
+}
+
+function buildReps(rows){
+  const map={};
+  rows.forEach(r=>{
+    const name=(r[colMap.name]||'Unknown').trim();
+    if(!map[name])map[name]={name,calls:0,leads:0,deals:0,rev:0,tasks:0,notes:'',count:0};
+    map[name].calls +=(parseFloat(r[colMap.calls]  ||0)||0);
+    map[name].leads +=(parseFloat(r[colMap.leads]  ||0)||0);
+    map[name].deals +=(parseFloat(r[colMap.deals]  ||0)||0);
+    map[name].rev   +=(parseFloat(r[colMap.revenue] ||0)||0);
+    map[name].tasks +=(parseFloat(r[colMap.tasks]  ||0)||0);
+    if(colMap.notes&&r[colMap.notes])map[name].notes=r[colMap.notes];
+    map[name].count++;
+  });
+  return Object.values(map).sort((a,b)=>b.rev-a.rev);
+}
+
+function weeklyBuckets(rows){
+  const today=new Date(),dow=today.getDay();
+  const monOff=dow===0?-6:1-dow;
+  const ms=new Date(today);ms.setDate(today.getDate()+monOff);ms.setHours(0,0,0,0);
+  const b=[0,0,0,0,0,0,0];
+  rows.forEach(r=>{
+    const ts=r[colMap.timestamp];if(!ts)return;
+    const d=new Date(ts);if(d<ms)return;
+    const diff=Math.floor((d-ms)/86400000);
+    if(diff>=0&&diff<7)b[diff]+=(parseFloat(r[colMap.revenue]||0)||0);
+  });
+  return b;
+}
+
+function ago(ts){
+  if(!ts)return'';
+  const s=(Date.now()-new Date(ts))/1000;
+  if(s<60)return'Just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+
+function render(){
+  document.getElementById('curdate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const todayRows=allRows.filter(r=>isToday(r[colMap.timestamp]));
+  const todayReps=buildReps(todayRows);
+  const allReps=buildReps(allRows);
+
+  const totRev=todayReps.reduce((a,r)=>a+r.rev,0);
+  const totDeals=todayReps.reduce((a,r)=>a+r.deals,0);
+  const totCalls=todayReps.reduce((a,r)=>a+r.calls,0);
+  const totLeads=todayReps.reduce((a,r)=>a+r.leads,0);
+  document.getElementById('m-rev').textContent=money(totRev);
+  document.getElementById('m-deals').textContent=totDeals;
+  document.getElementById('m-calls').textContent=totCalls;
+  document.getElementById('m-leads').textContent=totLeads;
+
+  const maxRev=todayReps[0]?.rev||1;
+  document.getElementById('lbList').innerHTML=todayReps.length
+    ?todayReps.map((r,i)=>{
+        const{av,bar}=rc(r.name),pct=Math.round((r.rev/maxRev)*100);
+        return`<div class="lrow">
+          <div class="lrank">${i+1}</div>
+          <div class="av" style="width:32px;height:32px;font-size:11px;background:${av.bg};color:${av.c};">${ini(r.name)}</div>
+          <div class="linfo"><div class="lname">${r.name}</div><div class="lbg"><div class="lfill" style="width:${pct}%;background:${bar};"></div></div></div>
+          <div class="lr"><div class="lrev">${money(r.rev)}</div><div class="lsub">${r.deals} deal${r.deals!==1?'s':''}</div></div>
+        </div>`;
+      }).join('')
+    :'<div class="empty">No submissions today yet.</div>';
+
+  const wData=weeklyBuckets(allRows);
+  const todayIdx=(()=>{const d=new Date().getDay();return d===0?6:d-1;})();
+  const wMax=Math.max(...wData,1);
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  document.getElementById('wchart').innerHTML=wData.map((v,i)=>{
+    const h=Math.max(Math.round((v/wMax)*64),v>0?4:0),today=i===todayIdx;
+    return`<div class="wcol">
+      <div class="wval">${v>0?'$'+(v>=1000?(v/1000).toFixed(0)+'k':Math.round(v)):''}</div>
+      <div class="winn"><div class="wbar" style="height:${h}px;background:${today?'#534AB7':'var(--bg2)'};border:${today?'none':'0.5px solid var(--border)'};"></div></div>
+      <div class="wday" style="font-weight:${today?600:400};color:${today?'var(--text)':'var(--text3)'};">${days[i]}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('wktotal').textContent=money(wData.reduce((a,v)=>a+v,0))+' this week';
+
+  document.getElementById('teamList').innerHTML=allReps.length
+    ?allReps.map((r,i)=>{
+        const{av,bar}=rc(r.name);
+        return`<div class="rc">
+          <div class="rh">
+            <div class="av" style="width:40px;height:40px;font-size:13px;background:${av.bg};color:${av.c};">${ini(r.name)}</div>
+            <div style="flex:1;"><div class="rn">${r.name}</div>${i===0?'<span class="badge bg">Top performer</span>':'<span class="badge bk">'+r.count+' submission'+(r.count!==1?'s':'')+'</span>'}</div>
+            <div style="font-size:20px;font-weight:600;color:var(--text);">${money(r.rev)}</div>
+          </div>
+          <div class="rs">
+            <div class="rsb"><div class="rsl">Calls</div><div class="rsv">${r.calls}</div></div>
+            <div class="rsb"><div class="rsl">Leads</div><div class="rsv">${r.leads}</div></div>
+            <div class="rsb"><div class="rsl">Deals</div><div class="rsv">${r.deals}</div></div>
+            <div class="rsb"><div class="rsl">Tasks</div><div class="rsv">${r.tasks}</div></div>
+          </div>
+          ${r.notes?`<div class="rnote">"${r.notes}"</div>`:''}
+        </div>`;
+      }).join('')
+    :'<div class="empty">No submissions yet.</div>';
+
+  const sorted=[...allRows].sort((a,b)=>new Date(b[colMap.timestamp]||0)-new Date(a[colMap.timestamp]||0));
+  document.getElementById('feedList').innerHTML=sorted.length
+    ?sorted.slice(0,30).map(r=>{
+        const name=(r[colMap.name]||'?').trim(),{bar}=rc(name);
+        const rev=parseFloat(r[colMap.revenue]||0)||0,deals=parseInt(r[colMap.deals]||0)||0;
+        const ts=r[colMap.timestamp];
+        return`<div class="ai">
+          <div class="adot" style="background:${bar};"></div>
+          <div>
+            <div class="atxt"><strong>${name}</strong> — ${deals} deal${deals!==1?'s':''}, ${money(rev)} revenue</div>
+            <div class="atm">${ago(ts)}${ts?' · '+new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):''}</div>
+          </div>
+        </div>`;
+      }).join('')
+    :'<div class="empty">No submissions yet.</div>';
+}
+
+async function loadData(){
+  document.getElementById('statusmsg').innerHTML='<span class="spin"></span>Refreshing from Google Sheets…';
+  document.getElementById('errbanner').style.display='none';
+
+  // Try multiple proxies in order — allorigins sometimes returns base64, corsproxy is plain text
+  const proxies = [
+    { url: 'https://corsproxy.io/?'+encodeURIComponent(SHEET_CSV_URL), type: 'text' },
+    { url: 'https://api.allorigins.win/get?url='+encodeURIComponent(SHEET_CSV_URL), type: 'json' },
+    { url: 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(SHEET_CSV_URL), type: 'text' },
+  ];
+
+  try{
+    let csvText = null;
+    let lastErr = null;
+
+    for (const p of proxies) {
+      try {
+        const res = await fetch(p.url, {cache:'no-store'});
+        if (!res.ok) throw new Error('HTTP '+res.status);
+        if (p.type === 'json') {
+          const json = await res.json();
+          let content = json.contents || '';
+          // allorigins sometimes base64-encodes — detect and decode
+          if (content.startsWith('data:')) {
+            const b64 = content.split(',')[1];
+            if (b64) content = atob(b64);
+          }
+          if (content.trim()) { csvText = content; break; }
+        } else {
+          const text = await res.text();
+          if (text.trim()) { csvText = text; break; }
+        }
+      } catch(e) { lastErr = e; }
+    }
+
+    if (!csvText) throw new Error('All proxies failed. Last error: '+(lastErr?.message||'unknown'));
+    if (!csvText.includes(',')) throw new Error('Response does not look like CSV — check Sheet is published.');
+
+    allRows=parseCSV(csvText);
+
+    // Show column detection summary
+    const ib=document.getElementById('infobanner');
+    const missing=Object.keys(COL_ALIASES).filter(k=>!colMap[k]);
+    if(missing.length){
+      ib.style.display='block';
+      ib.innerHTML=`<strong>Column detection:</strong> Could not match: <code>${missing.join(', ')}</code><br>
+        Detected headers: <code>${detectedHeaders.join(' | ')}</code><br>
+        Matched: ${Object.entries(colMap).filter(([,v])=>v).map(([k,v])=>`<code>${k} → ${v}</code>`).join(', ')}<br>
+        <em>Edit COL_ALIASES in the script to fix mismatches.</em>`;
+    } else {
+      ib.style.display='none';
+    }
+
+    render();
+    document.getElementById('statusmsg').textContent=`Updated ${new Date().toLocaleTimeString()} · ${allRows.length} row${allRows.length!==1?'s':''} loaded`;
+
+  }catch(e){
+    const eb=document.getElementById('errbanner');
+    eb.style.display='block';
+    eb.innerHTML=`<strong>Could not load data.</strong> ${e.message}<br>
+      Check: (1) Sheet is published via File → Share → Publish to web → CSV, (2) the URL in this file is correct.<br>
+      <small>URL: <code>${SHEET_CSV_URL}</code></small>`;
+    document.getElementById('statusmsg').textContent='Error loading — see banner above';
+    if(allRows.length)render();
+  }
+}
+
+function go(t){
+  ['overview','team','activity','setup'].forEach((n,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('on',n===t);
+    document.getElementById('v-'+n).classList.toggle('on',n===t);
+  });
+}
+
+document.getElementById('curdate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+loadData();
+setInterval(loadData,REFRESH_MS);
+</script>
+</body>
+</html>
